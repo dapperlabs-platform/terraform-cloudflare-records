@@ -1,24 +1,14 @@
-variable "vanity_domain" {
-  description = "Public Facing Domain"
+variable "destination_ip" {
+  description = "Your destination IP (Load balancer)"
   type        = string
 }
 
-variable "internal_subdomain" {
-  description = "Internal Sub Domain"
+variable "cloudflare_zone_domain" {
+  description = "Main cloudflare zone to create records and certificates in"
+}
+
+variable "subdomain" {
+  description = "Subdomain to create records and certificates for"
   type        = string
-}
-
-variable "k8s_ingress_ip" {
-  description = "Load Balancer IP"
-  type        = string
-}
-
-variable "common_name" {
-  default = "Some Common Name"
-  type    = string
-}
-
-variable "organization" {
-  default = "Some Organization"
-  type    = string
+  default     = "*"
 }

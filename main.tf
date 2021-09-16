@@ -1,41 +1,78 @@
-# cloudflare zone for internalSubdomain
-data "cloudflare_zones" "internal_subdomain" {
-  filter {
-    name = var.internal_subdomain
+terraform {
+  required_providers {
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "~> 2.25.0"
+    }
   }
 }
 
+locals {
+  wildcard = var.subdomain != "*" ? "*.${var.subdomain}" : "*."
+}
 
-# A record that points vanityDomain to the ingress IP
-resource "cloudflare_record" "vanity_domain_dns_record" {
-  zone_id = lookup(data.cloudflare_zones.internal_subdomain.zones[0], "id")
+# cloudflare zone for internalSubdomain
+data "cloudflare_zones" "zone" {
+  filter {
+    name = var.cloudflare_zone_domain
+  }
+}
+
+resource "cloudflare_record" "subdomain_a_record" {
+  zone_id = lookup(data.cloudflare_zones.zone.zones[0], "id")
   type    = "A"
   ttl     = 1
-  name    = var.vanity_domain
-  value   = var.k8s_ingress_ip
+  name    = var.subdomain
+  value   = var.destination_ip
   proxied = true
 }
 
-# A record that points *.internalSubdomain to the ingress
-resource "cloudflare_record" "wildcard_internal_subdomain_dns_record" {
-  zone_id = lookup(data.cloudflare_zones.internal_subdomain.zones[0], "id")
+resource "cloudflare_record" "wildcard_subdomain_a_record" {
+  count   = var.subdomain != "*" ? 1 : 0
+  zone_id = lookup(data.cloudflare_zones.zone.zones[0], "id")
   type    = "A"
   ttl     = 1
-  name    = "*.${var.internal_subdomain}"
-  value   = var.k8s_ingress_ip
+  name    = local.wildcard
+  value   = var.destination_ip
   proxied = true
 }
 
 #  Edge Certificate for vanityDomain
 resource "cloudflare_certificate_pack" "internal_domain_cert_pack" {
-  zone_id = lookup(data.cloudflare_zones.internal_subdomain.zones[0], "id")
+  zone_id = lookup(data.cloudflare_zones.zone.zones[0], "id")
   type    = "advanced"
   hosts = [
-    var.internal_subdomain,
-    "*.${var.internal_subdomain}"
+    "${var.cloudflare_zone_domain}",
+    "${local.wildcard}.${var.cloudflare_zone_domain}"
   ]
   validation_method     = "http"
   validity_days         = 365
   certificate_authority = "digicert"
   cloudflare_branding   = false
+}
+
+# Create a CSR and generate a CA certificate
+resource "tls_private_key" "private_key" {
+  algorithm = "RSA"
+}
+
+resource "tls_cert_request" "cert_request" {
+  key_algorithm   = tls_private_key.private_key.algorithm
+  private_key_pem = tls_private_key.private_key.private_key_pem
+
+  subject {
+    common_name  = ""
+    organization = "ORG"
+  }
+}
+
+# Origin ca certificate to be used by your k8s ingress.
+# Default validity is 15 years
+resource "cloudflare_origin_ca_certificate" "origin_certificate" {
+  csr = tls_cert_request.cert_request.cert_request_pem
+  hostnames = [
+    "${var.cloudflare_zone_domain}",
+    "${local.wildcard}.${var.cloudflare_zone_domain}"
+  ]
+  request_type = "origin-rsa"
 }
