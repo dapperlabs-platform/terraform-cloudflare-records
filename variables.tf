@@ -1,5 +1,5 @@
-variable "destination_ip" {
-  description = "Your destination IP (Load balancer)"
+variable "destination" {
+  description = "Your destination IP for A or subdomain for CNAME records"
   type        = string
 }
 

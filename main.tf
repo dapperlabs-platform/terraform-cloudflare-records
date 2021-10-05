@@ -9,6 +9,10 @@ terraform {
 
 locals {
   wildcard = var.subdomain != "*" ? "*.${var.subdomain}" : "*."
+  # result is IP string if var.destination is an IP address, null otherwise 
+  regex_result = try(regex("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$", var.destination), null)
+  # destination is an IP address if regex_result is not null.
+  is_a_record = local.regex_result != null
 }
 
 # cloudflare zone for internalSubdomain
@@ -20,20 +24,20 @@ data "cloudflare_zones" "zone" {
 
 resource "cloudflare_record" "subdomain_a_record" {
   zone_id = lookup(data.cloudflare_zones.zone.zones[0], "id")
-  type    = "A"
+  type    = local.is_a_record ? "A" : "CNAME"
   ttl     = 1
   name    = var.subdomain
-  value   = var.destination_ip
+  value   = var.destination
   proxied = true
 }
 
 resource "cloudflare_record" "wildcard_subdomain_a_record" {
   count   = var.subdomain != "*" ? 1 : 0
   zone_id = lookup(data.cloudflare_zones.zone.zones[0], "id")
-  type    = "A"
+  type    = local.is_a_record ? "A" : "CNAME"
   ttl     = 1
   name    = local.wildcard
-  value   = var.destination_ip
+  value   = var.destination
   proxied = true
 }
 
