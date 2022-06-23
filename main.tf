@@ -65,7 +65,6 @@ resource "tls_private_key" "private_key" {
 }
 
 resource "tls_cert_request" "cert_request" {
-  key_algorithm   = tls_private_key.private_key.algorithm
   private_key_pem = tls_private_key.private_key.private_key_pem
 
   subject {
