@@ -53,10 +53,15 @@ resource "cloudflare_certificate_pack" "internal_domain_cert_pack" {
     "${var.cloudflare_zone_domain}",
     "${local.wildcard}.${var.cloudflare_zone_domain}"
   ]
-  validation_method     = local.validation_methods[var.certificate_pack_certificate_authority]
-  validity_days         = 365
-  certificate_authority = var.certificate_pack_certificate_authority
-  cloudflare_branding   = false
+  validation_method      = local.validation_methods[var.certificate_pack_certificate_authority]
+  validity_days          = 365
+  certificate_authority  = var.certificate_pack_certificate_authority
+  cloudflare_branding    = false
+  wait_for_active_status = true
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # Create a CSR and generate a CA certificate
