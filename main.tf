@@ -75,6 +75,7 @@ resource "tls_cert_request" "cert_request" {
   subject {
     common_name  = ""
     organization = "ORG"
+    street_address = []
   }
 }
 
