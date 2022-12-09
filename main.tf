@@ -8,7 +8,7 @@ terraform {
 }
 
 locals {
-  wildcard = var.subdomain != "*" ? "*.${var.subdomain}" : "*."
+  wildcard = var.subdomain != "*" ? "*.${var.subdomain}" : var.subdomain
   # result is IP string if var.destination is an IP address, null otherwise 
   regex_result = try(regex("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$", var.destination), null)
   # destination is an IP address if regex_result is not null.
