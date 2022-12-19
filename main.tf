@@ -63,28 +63,3 @@ resource "cloudflare_certificate_pack" "internal_domain_cert_pack" {
     create_before_destroy = true
   }
 }
-
-# Create a CSR and generate a CA certificate
-resource "tls_private_key" "private_key" {
-  algorithm = "RSA"
-}
-
-resource "tls_cert_request" "cert_request" {
-  private_key_pem = tls_private_key.private_key.private_key_pem
-
-  subject {
-    common_name  = ""
-    organization = "ORG"
-  }
-}
-
-# Origin ca certificate to be used by your k8s ingress.
-# Default validity is 15 years
-resource "cloudflare_origin_ca_certificate" "origin_certificate" {
-  csr = tls_cert_request.cert_request.cert_request_pem
-  hostnames = [
-    "${var.cloudflare_zone_domain}",
-    "${local.wildcard}.${var.cloudflare_zone_domain}"
-  ]
-  request_type = "origin-rsa"
-}
