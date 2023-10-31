@@ -16,9 +16,9 @@ variable "subdomain" {
 variable "certificate_pack_certificate_authority" {
   description = "Certificate authority for the advanced certificate pack. Allowed values are digicert and lets_encrypt"
   type        = string
-  default     = "digicert"
+  default     = "google"
   validation {
-    condition     = contains(["digicert", "lets_encrypt"], var.certificate_pack_certificate_authority)
-    error_message = "The certificate_pack_certificate_authority value must be digicert or lets_encrypt."
+    condition     = contains(["google", "lets_encrypt"], var.certificate_pack_certificate_authority)
+    error_message = "The certificate_pack_certificate_authority value must be google or lets_encrypt."
   }
 }
