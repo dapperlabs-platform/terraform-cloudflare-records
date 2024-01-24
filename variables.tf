@@ -14,7 +14,7 @@ variable "subdomain" {
 }
 
 variable "certificate_pack_certificate_authority" {
-  description = "Certificate authority for the advanced certificate pack. Allowed values are digicert and lets_encrypt"
+  description = "Certificate authority for the advanced certificate pack. Allowed values are google and lets_encrypt"
   type        = string
   default     = "google"
   validation {
