@@ -22,3 +22,9 @@ variable "certificate_pack_certificate_authority" {
     error_message = "The certificate_pack_certificate_authority value must be google or lets_encrypt."
   }
 }
+
+variable "zone_id" {
+  description = "The zone ID for the Cloudflare zone"
+  type        = string
+}
+
