@@ -3,8 +3,9 @@ variable "destination" {
   type        = string
 }
 
-variable "cloudflare_zone_domain" {
+variable "cloudflare_zone_id" {
   description = "Main cloudflare zone to create records and certificates in"
+  type        = string
 }
 
 variable "subdomain" {
@@ -18,7 +19,7 @@ variable "certificate_pack_certificate_authority" {
   type        = string
   default     = "google"
   validation {
-    condition     = contains(["google", "lets_encrypt"], var.certificate_pack_certificate_authority)
+    condition     = contains(["google", "lets_encrypt", "ssl_com"], var.certificate_pack_certificate_authority)
     error_message = "The certificate_pack_certificate_authority value must be google or lets_encrypt."
   }
 }

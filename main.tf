@@ -19,15 +19,9 @@ locals {
   }
 }
 
-# cloudflare zone for internalSubdomain
-data "cloudflare_zones" "zone" {
-  filter {
-    name = var.cloudflare_zone_domain
-  }
-}
 
 resource "cloudflare_record" "subdomain_a_record" {
-  zone_id = lookup(data.cloudflare_zones.zone.zones[0], "id")
+  zone_id = var.cloudflare_zone_id
   type    = local.is_a_record ? "A" : "CNAME"
   ttl     = 1
   name    = var.subdomain
@@ -37,7 +31,7 @@ resource "cloudflare_record" "subdomain_a_record" {
 
 resource "cloudflare_record" "wildcard_subdomain_a_record" {
   count   = var.subdomain != "*" ? 1 : 0
-  zone_id = lookup(data.cloudflare_zones.zone.zones[0], "id")
+  zone_id = var.cloudflare_zone_id
   type    = local.is_a_record ? "A" : "CNAME"
   ttl     = 1
   name    = local.wildcard
@@ -47,7 +41,7 @@ resource "cloudflare_record" "wildcard_subdomain_a_record" {
 
 #  Edge Certificate for vanityDomain
 resource "cloudflare_certificate_pack" "internal_domain_cert_pack" {
-  zone_id = lookup(data.cloudflare_zones.zone.zones[0], "id")
+  zone_id = var.cloudflare_zone_id
   type    = "advanced"
   hosts = [
     "${var.cloudflare_zone_domain}",
