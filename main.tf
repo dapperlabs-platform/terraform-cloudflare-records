@@ -19,6 +19,9 @@ locals {
   }
 }
 
+data "cloudflare_zone" "zone" {
+  zone_id = var.cloudflare_zone_id
+}
 
 resource "cloudflare_record" "subdomain_a_record" {
   zone_id = var.cloudflare_zone_id
@@ -44,8 +47,8 @@ resource "cloudflare_certificate_pack" "internal_domain_cert_pack" {
   zone_id = var.cloudflare_zone_id
   type    = "advanced"
   hosts = concat([
-    "${var.cloudflare_zone_domain}",
-    "${local.wildcard}.${var.cloudflare_zone_domain}"
+    "${data.cloudflare_zone.zone.name}",
+    "${local.wildcard}.${data.cloudflare_zone.zone.name}"
   ], var.additional_hosts)
   validation_method      = local.validation_methods[var.certificate_pack_certificate_authority]
   validity_days          = 90
