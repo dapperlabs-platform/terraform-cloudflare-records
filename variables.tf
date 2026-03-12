@@ -14,9 +14,8 @@ variable "cloudflare_zone_id" {
 }
 
 variable "subdomain" {
-  description = "Subdomain to create records and certificates for"
+  description = "Subdomain to create records and certificates for. Use '*' or '*.prefix' for wildcard records."
   type        = string
-  default     = "*"
 }
 
 variable "certificate_pack_certificate_authority" {

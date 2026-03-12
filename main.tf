@@ -8,7 +8,6 @@ terraform {
 }
 
 locals {
-  wildcard = var.subdomain != "*" ? "*.${var.subdomain}" : var.subdomain
   # result is IP string if var.destination is an IP address, null otherwise
   regex_result = try(regex("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$", var.destination), null)
   # destination is an IP address if regex_result is not null.
@@ -28,23 +27,13 @@ resource "cloudflare_record" "subdomain_a_record" {
   proxied = true
 }
 
-resource "cloudflare_record" "wildcard_subdomain_a_record" {
-  count   = var.subdomain != "*" ? 1 : 0
-  zone_id = var.cloudflare_zone_id
-  type    = local.is_a_record ? "A" : "CNAME"
-  ttl     = 1
-  name    = local.wildcard
-  value   = var.destination
-  proxied = true
-}
-
 #  Edge Certificate for vanityDomain
 resource "cloudflare_certificate_pack" "internal_domain_cert_pack" {
   zone_id = var.cloudflare_zone_id
   type    = "advanced"
   hosts = concat([
     "${var.cloudflare_zone_domain}",
-    "${local.wildcard}.${var.cloudflare_zone_domain}"
+    "${var.subdomain}.${var.cloudflare_zone_domain}"
   ], var.additional_hosts)
   validation_method      = local.validation_methods[var.certificate_pack_certificate_authority]
   validity_days          = 90
